@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Eye, Ban, RotateCcw } from 'lucide-react';
 import { Button } from './ui';
 import { JobStateBadge } from './Badges';
+import PdfPreview from './PdfPreview';
 import { api, fmtBytes, fmtDate } from '../api/client';
 import type { Job } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
@@ -20,8 +21,7 @@ export default function JobsTable({ jobs, onRefresh }: { jobs: Job[]; onRefresh?
       onRefresh?.();
     } catch (e) {
       setError((e as Error).message);
-    }
-  }
+    }  }
 
   if (!jobs.length) {
     return <div className="py-10 text-center text-sm text-slate-400">Sin trabajos para mostrar.</div>;
@@ -85,17 +85,13 @@ export default function JobsTable({ jobs, onRefresh }: { jobs: Job[]; onRefresh?
       </div>
 
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setPreview(null)}>
-          <div className="flex h-[85vh] w-full max-w-4xl flex-col rounded-2xl bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-              <div className="text-sm font-semibold">Trabajo #{preview.id} — {preview.title}</div>
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/95 p-3 sm:p-6" onClick={() => setPreview(null)}>
+          <div className="flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl mx-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
+              <span className="text-sm font-semibold">Trabajo #{preview.id} — {preview.title || 'documento'}</span>
               <Button variant="ghost" onClick={() => setPreview(null)}>✕</Button>
             </div>
-            <iframe
-              src={`/api/jobs/${preview.id}/document`}
-              className="flex-1"
-              title={`Documento del trabajo ${preview.id}`}
-            />
+            <PdfPreview source={`/api/jobs/${preview.id}/document`} heightClass="flex-1" />
           </div>
         </div>
       )}

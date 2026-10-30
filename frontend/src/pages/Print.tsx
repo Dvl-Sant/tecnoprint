@@ -4,6 +4,7 @@ import { UploadCloud, CheckCircle2, FileText, Eye, EyeOff } from 'lucide-react';
 import { api } from '../api/client';
 import type { Printer } from '../api/client';
 import { Card, Button, Input, Select, Label, ErrorBox } from '../components/ui';
+import PdfPreview from '../components/PdfPreview';
 
 const ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.txt';
 
@@ -38,6 +39,7 @@ export default function Print() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ jobId: number; pages: number | null } | null>(null);
+  const [fullPreview, setFullPreview] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isPdf = !!file && file.name.toLowerCase().endsWith('.pdf');
@@ -228,7 +230,8 @@ export default function Print() {
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
               <span className="text-sm font-semibold">Vista previa</span>
               <div className="flex items-center gap-1">
-                <Button variant="soft" onClick={() => window.open(previewUrl, '_blank')} title="Abrir en otra pestaña (ideal en móvil)">
+                <Button variant="ghost" onClick={() => setFullPreview(true)} title="Pantalla completa">⛶</Button>
+                <Button variant="soft" onClick={() => window.open(previewUrl, '_blank')} title="Abrir en otra pestaña">
                   Abrir ↗
                 </Button>
                 <Button variant="ghost" onClick={() => setShowPreview(!showPreview)} title={showPreview ? 'Ocultar' : 'Mostrar'}>
@@ -236,14 +239,21 @@ export default function Print() {
                 </Button>
               </div>
             </div>
-            {showPreview && (
-              <iframe
-                src={previewUrl}
-                className="h-[60vh] flex-1 bg-slate-100 lg:h-[70vh]"
-                title="Vista previa del PDF"
-              />
-            )}
+            {showPreview && file && <PdfPreview source={file} />}
           </Card>
+        )}
+
+        {/* Vista previa a pantalla completa */}
+        {fullPreview && previewUrl && (
+          <div className="fixed inset-0 z-50 flex flex-col bg-slate-900">
+            <div className="flex items-center justify-between px-4 py-2.5 text-white">
+              <span className="text-sm font-semibold">Vista previa — {file?.name}</span>
+              <div className="flex items-center gap-2">
+                <Button variant="primary" onClick={() => setFullPreview(false)}>✕ Cerrar</Button>
+              </div>
+            </div>
+            {file && <PdfPreview source={file} heightClass="flex-1" />}
+          </div>
         )}
         {!previewUrl && file && !isPdf && (
           <Card className="flex items-center gap-3 p-4 text-sm text-slate-500">
