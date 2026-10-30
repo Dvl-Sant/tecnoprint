@@ -1,0 +1,17 @@
+[Unit]
+Description=TecnoPrint - Portal de impresión (API Fastify)
+After=network.target cups.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/tecnoprint/backend
+Environment=NODE_ENV=production
+EnvironmentFile=-/opt/tecnoprint/backend/.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=3
+# root para leer el spool de todos los usuarios (/var/spool/cups) y page_log
+User=root
+
+[Install]
+WantedBy=multi-user.target
