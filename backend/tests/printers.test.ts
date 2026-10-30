@@ -95,7 +95,7 @@ describe('alta/edición/baja de impresoras desde el portal', () => {
     const res = await app.inject({
       method: 'POST', url: '/api/printers',
       headers: { authorization: `Bearer ${adminToken}`, 'content-type': 'application/json' },
-      payload: { name: 'HP_Socket', uri: 'socket://192.0.2.10.35:9100', model: 'everywhere' },
+      payload: { name: 'HP_Socket', uri: 'socket://192.0.2.35:9100', model: 'everywhere' },
     });
     expect(res.statusCode).toBe(400);
     expect(res.json().error).toMatch(/everywhere/i);
@@ -107,7 +107,7 @@ describe('alta/edición/baja de impresoras desde el portal', () => {
     const res = await app.inject({
       method: 'POST', url: '/api/printers',
       headers: { authorization: `Bearer ${adminToken}`, 'content-type': 'application/json' },
-      payload: { name: 'Mi Impresora', uri: 'socket://192.0.2.10.35:9100' },
+      payload: { name: 'Mi Impresora', uri: 'socket://192.0.2.35:9100' },
     });
     expect(res.statusCode).toBe(400);
     await app.close();
@@ -129,7 +129,7 @@ describe('alta/edición/baja de impresoras desde el portal', () => {
     const res = await app.inject({
       method: 'POST', url: '/api/printers',
       headers: { authorization: `Bearer ${userToken}`, 'content-type': 'application/json' },
-      payload: { name: 'X1', uri: 'socket://192.0.2.10.35:9100' },
+      payload: { name: 'X1', uri: 'socket://192.0.2.35:9100' },
     });
     expect(res.statusCode).toBe(403);
     await app.close();
@@ -167,7 +167,7 @@ describe('alta/edición/baja de impresoras desde el portal', () => {
       headers: { authorization: `Bearer ${adminToken}` },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()[0]).toMatchObject({ uri: 'socket://192.0.2.10.35:9100', info: 'network' });
+    expect(res.json()[0]).toMatchObject({ uri: 'socket://192.0.2.35:9100', info: 'network' });
     await app.close();
   });
 });

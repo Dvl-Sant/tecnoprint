@@ -65,6 +65,7 @@ export interface UserInfo {
 export interface CupDevice {
   uri: string;
   info: string;
+  label?: string;
 }
 export interface JobsPage {
   total: number;

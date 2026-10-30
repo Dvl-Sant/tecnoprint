@@ -44,6 +44,8 @@ export type PrinterAction = 'pause' | 'resume' | 'accept' | 'reject' | 'purge' |
 export interface CupDevice {
   uri: string;
   info: string;
+  /** Nombre comercial de la impresora (cuando el descubrimiento lo reporta). */
+  label?: string;
 }
 
 export interface NewPrinter {

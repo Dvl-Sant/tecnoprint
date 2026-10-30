@@ -168,7 +168,7 @@ export default function Printers() {
           <div>
             <Label>Conexión (URI) *</Label>
             <div className="flex gap-2">
-              <Input value={form.uri} onChange={(e) => setForm({ ...form, uri: e.target.value })} placeholder="socket://192.0.2.10.35:9100" />
+              <Input value={form.uri} onChange={(e) => setForm({ ...form, uri: e.target.value })} placeholder="socket://192.0.2.35:9100" />
               <Button type="button" variant="soft" onClick={scanNetwork} disabled={scanning}>
                 {scanning ? 'Escaneando…' : 'Escanear red'}
               </Button>
@@ -188,7 +188,12 @@ export default function Printers() {
                       }}
                       title={d.uri}
                     >
-                      [{d.info}] {decodeURIComponent(d.uri).slice(0, 70)}
+                      <span className="font-semibold">{d.label || decodeURIComponent(d.uri)}</span>
+                      {d.label && (
+                        <span className="ml-1 font-mono text-[10px] text-slate-400">
+                          ({d.uri.startsWith('ipps://') ? 'IPP cifrado' : d.uri.slice(0, 40)})
+                        </span>
+                      )}
                     </button>
                   ))}
                   {!devices.length && <div className="px-2 py-1 text-xs text-slate-400">No se encontraron dispositivos. Escribe la URI manualmente.</div>}

@@ -125,6 +125,46 @@ export function parseLpinfoDevices(out: string): { uri: string; info: string }[]
   return devices;
 }
 
+/** Nombre base de un URI mDNS (dnssd/ipps): "HP LaserJet M501dn (673E55)". */
+export function mdnsBaseName(uri: string): string | null {
+  const m = uri.match(/^(?:dnssd|ipps):\/\/([^?]+)/);
+  if (!m) return null;
+  const base = m[1].split('._ipp')[0].split('._ipps')[0];
+  try {
+    return decodeURIComponent(base);
+  } catch {
+    return base;
+  }
+}
+
+/**
+ * Agrupa los dispositivos descubiertos: la misma impresora física suele
+ * anunciarse dos veces (dnssd + ipps). Se muestra una sola vez, prefiriendo
+ * ipps (conexión cifrada), con el nombre comercial como etiqueta.
+ */
+export function dedupeDevices(devices: { uri: string; info: string }[]): { uri: string; info: string; label?: string }[] {
+  const result: { uri: string; info: string; label?: string }[] = [];
+  const byBase = new Map<string, { uri: string; info: string; label: string }>();
+
+  for (const d of devices) {
+    const base = mdnsBaseName(d.uri);
+    if (!base) {
+      result.push({ ...d });
+      continue;
+    }
+    const existing = byBase.get(base);
+    if (!existing) {
+      byBase.set(base, { ...d, label: base });
+    } else if (d.uri.startsWith('ipps://') && !existing.uri.startsWith('ipps://')) {
+      // preferir la variante cifrada conservando la etiqueta
+      byBase.set(base, { uri: d.uri, info: d.info, label: base });
+    }
+  }
+
+  for (const grouped of byBase.values()) result.push(grouped);
+  return result;
+}
+
 /** Línea de /var/log/cups/page_log. */
 export function parsePageLogLine(line: string): PageLogEntry | null {
   const m = line.match(/^\S+\s+(\S+)\s+(\d+)\s+\[[^\]]+\]\s+total\s+(\d+)\s+-\s+\S+\s+(.*)$/);

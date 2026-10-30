@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# TecnoPrint — Despliegue al servidor printserver (192.0.2.10.55)
+# TecnoPrint — Despliegue al servidor printserver (192.0.2.55)
 # Se ejecuta DESDE LA PC del admin. Pide confirmación antes
 # de tocar nada y deja instrucciones de rollback al final.
 # ============================================================
@@ -63,7 +63,7 @@ echo "[8/8] Listo."
 cat <<'ROLLBACK'
 
 ----------------------------------------------
-✅ Despliegue terminado. Portal en http://print.example.com (o http://192.0.2.10.55)
+✅ Despliegue terminado. Portal en http://print.example.com (o http://192.0.2.55)
 
 ROLLBACK (si algo sale mal, desde esta misma PC):
   ssh cups-server

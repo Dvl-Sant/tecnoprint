@@ -6,9 +6,10 @@ import {
   parsePrintersConf,
   parsePageLogLine,
   parseEsDate,
+  dedupeDevices,
 } from '../src/cups/parsers';
 
-// ── Fixtures REALES capturados del servidor printserver (192.0.2.10.55) ──
+// ── Fixtures REALES capturados del servidor printserver (192.0.2.55) ──
 // lpstat habla ESPAÑOL en el servidor (locale es). Se prueban ambos idiomas.
 
 const LPSTAT_P = `la impresora HP_Color_M283fdw está inactiva.  activada desde jue 30 oct 2026 08:00:00
@@ -38,14 +39,14 @@ PrinterId 14
 Info Impresora M283fdw
 Location Planta baja
 MakeModel HP ColorLaserJet MFP M282-M285, Fax, driverless, cups-filters 1.28.17
-DeviceURI socket://192.0.2.10.32:9100
+DeviceURI socket://192.0.2.32:9100
 State Idle
 </Printer>
 <Printer Plotter-Canon-TC-20>
 PrinterId 21
 Info Impresora para planos
 Location 2do Nivel
-DeviceURI socket://192.0.2.10.40:9100
+DeviceURI socket://192.0.2.40:9100
 </Printer>`;
 
 const PAGE_LOG_LINES = [
@@ -106,10 +107,10 @@ describe('parsePrintersConf', () => {
     expect(r['HP_Color_M283fdw']).toEqual({
       location: 'Planta baja',
       model: 'HP ColorLaserJet MFP M282-M285, Fax',
-      uri: 'socket://192.0.2.10.32:9100',
+      uri: 'socket://192.0.2.32:9100',
     });
     expect(r['Plotter-Canon-TC-20'].location).toBe('2do Nivel');
-    expect(r['Plotter-Canon-TC-20'].uri).toBe('socket://192.0.2.10.40:9100');
+    expect(r['Plotter-Canon-TC-20'].uri).toBe('socket://192.0.2.40:9100');
   });
 });
 
@@ -120,6 +121,24 @@ describe('parsePageLogLine', () => {
       job: 37, user: 'jperez', pages: 3, title: 'guia-estudiante.pdf',
     });
     expect(parsePageLogLine(PAGE_LOG_LINES[2])).toBeNull();
+  });
+});
+
+describe('dedupeDevices', () => {
+  it('agrupa dnssd+ipps de la misma impresora, prefiriendo ipps', () => {
+    // Caso REAL capturado del escaneo de red del servidor
+    const devices = [
+      { info: 'network', uri: 'dnssd://HP%20LaserJet%20Pro%20M501dn%20(673E55)._ipp._tcp.local/?uuid=50484254' },
+      { info: 'network', uri: 'ipps://HP%20LaserJet%20Pro%20M501dn%20(673E55)._ipps._tcp.local/' },
+      { info: 'network', uri: 'socket://192.0.2.33:9100' },
+    ];
+    const r = dedupeDevices(devices);
+    expect(r).toHaveLength(2);
+    const m501 = r.find((d) => d.label?.includes('M501dn'))!;
+    expect(m501.label).toBe('HP LaserJet Pro M501dn (673E55)');
+    expect(m501.uri.startsWith('ipps://')).toBe(true);
+    const socket = r.find((d) => d.uri.startsWith('socket://'))!;
+    expect(socket.label).toBeUndefined();
   });
 });
 

@@ -12,6 +12,7 @@ import {
   parseLpstatJobs,
   parsePrintersConf,
   parseLpinfoDevices,
+  dedupeDevices,
 } from './parsers';
 import type {
   CupsAdapter, CupDevice, JobInfo, NewPrinter, PrinterAction, PrinterInfo,
@@ -191,7 +192,7 @@ export class CupsCommandAdapter implements CupsAdapter {
 
   async listDevices(): Promise<CupDevice[]> {
     const r = await run(adminArgs(['lpinfo', '-v']));
-    return parseLpinfoDevices(r.stdout);
+    return dedupeDevices(parseLpinfoDevices(r.stdout));
   }
 
   async addPrinter(p: NewPrinter): Promise<void> {

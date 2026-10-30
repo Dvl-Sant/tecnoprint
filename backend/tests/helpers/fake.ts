@@ -23,12 +23,12 @@ export function makeFakeCups(): FakeCups {
       {
         name: 'HP_Color_M283fdw', status: 'idle', accepting: true,
         model: 'HP ColorLaserJet MFP M282-M285', location: 'Planta baja',
-        uri: 'socket://192.0.2.10.32:9100', queuedJobs: 1,
+        uri: 'socket://192.0.2.32:9100', queuedJobs: 1,
       },
       {
         name: 'Lexmark_MS823dn', status: 'stopped', accepting: false,
         model: 'Lexmark MS823dn', location: 'Planta baja',
-        uri: 'socket://192.0.2.10.31:9100', queuedJobs: 0,
+        uri: 'socket://192.0.2.31:9100', queuedJobs: 0,
       },
     ],
     completed: [
@@ -73,7 +73,7 @@ export function makeFakeCups(): FakeCups {
     async countPages(id) { return fake.pagesFor[id] ?? null; },
     async listDevices() {
       return [
-        { info: 'network', uri: 'socket://192.0.2.10.35:9100' },
+        { info: 'network', uri: 'socket://192.0.2.35:9100' },
         { info: 'network', uri: 'dnssd://HP%20LaserJet%20Pro%20M404-M405%20%5BCF7F8F%5D._ipp._tcp.local/?uuid=ca92b827' },
       ] as CupDevice[];
     },
