@@ -1,5 +1,10 @@
 export type PrinterStatus = 'idle' | 'printing' | 'stopped';
 
+export interface PrinterCapabilities {
+  color: boolean;
+  duplex: boolean;
+}
+
 export interface PrinterInfo {
   name: string;
   status: PrinterStatus;
@@ -8,6 +13,8 @@ export interface PrinterInfo {
   location: string;
   uri: string;
   queuedJobs: number;
+  /** Capacidades reales reportadas por CUPS (null si aún no consultadas). */
+  capabilities?: PrinterCapabilities | null;
 }
 
 export type JobState = 'pending' | 'processing' | 'completed' | 'aborted' | 'canceled';

@@ -7,6 +7,7 @@ import {
   parsePageLogLine,
   parseEsDate,
   dedupeDevices,
+  parseCapabilities,
 } from '../src/cups/parsers';
 
 // ── Fixtures REALES capturados del servidor printserver (192.0.2.55) ──
@@ -139,6 +140,28 @@ describe('dedupeDevices', () => {
     expect(m501.uri.startsWith('ipps://')).toBe(true);
     const socket = r.find((d) => d.uri.startsWith('socket://'))!;
     expect(socket.label).toBeUndefined();
+  });
+});
+
+describe('parseCapabilities (fixtures REALES del servidor)', () => {
+  it('TEST_Lab: color y dúplex', () => {
+    const out = `ColorModel/Output Mode: *RGB Gray
+Duplex/Double-Sided Printing: *None DuplexNoTumble DuplexTumble
+OptionDuplex/Duplexer: True *False`;
+    expect(parseCapabilities(out)).toEqual({ color: true, duplex: true });
+  });
+
+  it('Hp-M501dn y Lexmark: monocromáticas con dúplex', () => {
+    const out = `ColorModel/Output Mode: *Gray
+Duplex/Duplex: *None DuplexNoTumble DuplexTumble`;
+    expect(parseCapabilities(out)).toEqual({ color: false, duplex: true });
+  });
+
+  it('colas driverless (print-color-mode/sides)', () => {
+    const colorDuplex = `print-color-mode: *monochrome color\nsides: *one-sided two-sided-long-edge`;
+    expect(parseCapabilities(colorDuplex)).toEqual({ color: true, duplex: true });
+    const monoSimple = `print-color-mode: monochrome\nsides: one-sided`;
+    expect(parseCapabilities(monoSimple)).toEqual({ color: false, duplex: false });
   });
 });
 

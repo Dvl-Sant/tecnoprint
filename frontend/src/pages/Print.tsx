@@ -92,6 +92,14 @@ export default function Print() {
   }
 
   const available = (printers.data ?? []).filter((p) => p.accepting);
+  const selected = (printers.data ?? []).find((p) => p.name === printer);
+  const caps = selected?.capabilities ?? null;
+
+  // Si la impresora no soporta color/dúplex, forzar los valores soportados
+  useEffect(() => {
+    if (caps && !caps.color) setColor(false);
+    if (caps && !caps.duplex) setDuplex(false);
+  }, [caps?.color, caps?.duplex]);
 
   return (
     <div className="space-y-5">
@@ -195,13 +203,27 @@ export default function Print() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={duplex} onChange={(e) => setDuplex(e.target.checked)} className="h-4 w-4 rounded" />
+                <label className={`flex items-center gap-2 ${caps && !caps.duplex ? 'cursor-not-allowed text-slate-300' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={duplex}
+                    onChange={(e) => setDuplex(e.target.checked)}
+                    disabled={!!caps && !caps.duplex}
+                    className="h-4 w-4 rounded"
+                  />
                   Doble cara
+                  {caps && !caps.duplex && <span className="text-xs text-slate-400">(no soportado)</span>}
                 </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={color} onChange={(e) => setColor(e.target.checked)} className="h-4 w-4 rounded" />
+                <label className={`flex items-center gap-2 ${caps && !caps.color ? 'cursor-not-allowed text-slate-300' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={color}
+                    onChange={(e) => setColor(e.target.checked)}
+                    disabled={!!caps && !caps.color}
+                    className="h-4 w-4 rounded"
+                  />
                   A color
+                  {caps && !caps.color && <span className="text-xs text-slate-400">(solo B/N)</span>}
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={fitToPage} onChange={(e) => setFitToPage(e.target.checked)} className="h-4 w-4 rounded" />

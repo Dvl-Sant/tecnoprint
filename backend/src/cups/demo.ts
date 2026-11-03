@@ -14,10 +14,10 @@ export function makeDemoPdf(pages = 2): Buffer {
 }
 
 const PRINTERS: PrinterInfo[] = [
-  { name: 'HP_Color_MFP', status: 'idle', accepting: true, model: 'HP Color LaserJet MFP 283fdw', location: 'Planta baja', uri: 'socket://192.0.2.31:9100', queuedJobs: 0 },
-  { name: 'HP_LaserJet_404', status: 'printing', accepting: true, model: 'HP LaserJet Pro M404dw', location: 'Planta baja', uri: 'socket://192.0.2.32:9100', queuedJobs: 2 },
-  { name: 'Lexmark_MS810', status: 'idle', accepting: true, model: 'Lexmark MS810dn', location: 'Primer piso', uri: 'socket://192.0.2.33:9100', queuedJobs: 0 },
-  { name: 'Plotter_A0', status: 'stopped', accepting: false, model: 'Canon imagePROGRAF TC-20', location: 'Taller', uri: 'socket://192.0.2.40:9100', queuedJobs: 0 },
+  { name: 'HP_Color_MFP', status: 'idle', accepting: true, model: 'HP Color LaserJet MFP 283fdw', location: 'Planta baja', uri: 'socket://192.0.2.31:9100', queuedJobs: 0, capabilities: { color: true, duplex: true } },
+  { name: 'HP_LaserJet_404', status: 'printing', accepting: true, model: 'HP LaserJet Pro M404dw', location: 'Planta baja', uri: 'socket://192.0.2.32:9100', queuedJobs: 2, capabilities: { color: false, duplex: true } },
+  { name: 'Lexmark_MS810', status: 'idle', accepting: true, model: 'Lexmark MS810dn', location: 'Primer piso', uri: 'socket://192.0.2.33:9100', queuedJobs: 0, capabilities: { color: false, duplex: true } },
+  { name: 'Plotter_A0', status: 'stopped', accepting: false, model: 'Canon imagePROGRAF TC-20', location: 'Taller', uri: 'socket://192.0.2.40:9100', queuedJobs: 0, capabilities: { color: true, duplex: false } },
 ];
 
 function daysAgo(n: number, h = 10): string {

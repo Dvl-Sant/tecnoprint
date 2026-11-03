@@ -115,6 +115,43 @@ export interface PageLogEntry {
   title: string;
 }
 
+export interface PrinterCapabilities {
+  color: boolean;
+  duplex: boolean;
+}
+
+/**
+ * Salida de `lpoptions -p NAME -l` → capacidades de color y dúplex.
+ * Soporta colas PPD clásicas (ColorModel/Duplex) y driverless
+ * (print-color-mode/sides). El * marca el valor por omisión.
+ * Ejemplos REALES:
+ *   ColorModel/Output Mode: *RGB Gray          → color: true
+ *   ColorModel/Output Mode: *Gray              → color: false
+ *   Duplex/Double-Sided Printing: *None DuplexNoTumble DuplexTumble → duplex: true
+ *   print-color-mode: *monochrome color        → color: true
+ *   sides: *one-sided two-sided-long-edge      → duplex: true
+ */
+export function parseCapabilities(lpoptionsOut: string): PrinterCapabilities {
+  let color = false;
+  let duplex = false;
+  for (const line of lpoptionsOut.split('\n')) {
+    const m = line.match(/^([A-Za-z0-9_-]+)(?:\/[^:]+)?:\s*(.+)$/);
+    if (!m) continue;
+    const key = m[1];
+    const values = m[2].replace(/\*/g, '').trim().split(/\s+/);
+    if (key === 'ColorModel') {
+      color = values.some((v) => /^(rgb|cmyk|color)$/i.test(v));
+    } else if (key === 'print-color-mode') {
+      color = values.some((v) => /^color$/i.test(v));
+    } else if (key === 'Duplex') {
+      duplex = values.some((v) => /^duplex/i.test(v));
+    } else if (key === 'sides') {
+      duplex = values.some((v) => /^two-sided/i.test(v));
+    }
+  }
+  return { color, duplex };
+}
+
 /** Salida de `lpinfo -v` → dispositivos descubiertos en la red. */
 export function parseLpinfoDevices(out: string): { uri: string; info: string }[] {
   const devices: { uri: string; info: string }[] = [];

@@ -33,6 +33,10 @@ export async function api<T = any>(path: string, opts: RequestInit = {}): Promis
 
 // ── Tipos espejo del backend ──
 export type PrinterStatus = 'idle' | 'printing' | 'stopped';
+export interface PrinterCapabilities {
+  color: boolean;
+  duplex: boolean;
+}
 export interface Printer {
   name: string;
   status: PrinterStatus;
@@ -41,6 +45,7 @@ export interface Printer {
   location: string;
   uri: string;
   queuedJobs: number;
+  capabilities?: PrinterCapabilities | null;
 }
 export interface Job {
   id: number;

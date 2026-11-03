@@ -13,10 +13,11 @@ import {
   parsePrintersConf,
   parseLpinfoDevices,
   dedupeDevices,
+  parseCapabilities,
 } from './parsers';
 import type {
-  CupsAdapter, CupDevice, JobInfo, NewPrinter, PrinterAction, PrinterInfo,
-  PrinterPatch, PrintOptions, SubmitResult,
+  CupsAdapter, CupDevice, JobInfo, NewPrinter, PrinterAction, PrinterCapabilities,
+  PrinterInfo, PrinterPatch, PrintOptions, SubmitResult,
 } from './types';
 
 const OFFICE_EXTS = new Set(['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt']);
@@ -64,6 +65,20 @@ export async function readServerFile(serverPath: string): Promise<Buffer | null>
 }
 
 export class CupsCommandAdapter implements CupsAdapter {
+  /** Caché de capacidades por impresora (lpoptions es lento por SSH). */
+  private capsCache = new Map<string, { data: PrinterCapabilities; ts: number }>();
+  private static CAPS_TTL_MS = 5 * 60 * 1000;
+
+  private async capabilitiesFor(name: string): Promise<PrinterCapabilities | null> {
+    const hit = this.capsCache.get(name);
+    if (hit && Date.now() - hit.ts < CupsCommandAdapter.CAPS_TTL_MS) return hit.data;
+    const r = await run(adminArgs(['lpoptions', '-p', name, '-l']));
+    if (r.code !== 0 || !r.stdout.trim()) return null;
+    const caps = parseCapabilities(r.stdout);
+    this.capsCache.set(name, { data: caps, ts: Date.now() });
+    return caps;
+  }
+
   async listPrinters(): Promise<PrinterInfo[]> {
     const [p, a, o, confRaw] = await Promise.all([
       run(withTarget(['lpstat', '-p'])),
@@ -78,7 +93,7 @@ export class CupsCommandAdapter implements CupsAdapter {
     for (const j of parseLpstatJobs(o.stdout, 'pending')) {
       activeCounts[j.printer] = (activeCounts[j.printer] ?? 0) + 1;
     }
-    return states.map((s) => ({
+    const printers: PrinterInfo[] = states.map((s) => ({
       name: s.name,
       status: s.status,
       accepting: accepting[s.name] ?? true,
@@ -87,6 +102,13 @@ export class CupsCommandAdapter implements CupsAdapter {
       uri: conf[s.name]?.uri ?? '',
       queuedJobs: activeCounts[s.name] ?? 0,
     }));
+    // Capacidades reales (color/dúplex) con caché — en paralelo
+    await Promise.all(
+      printers.map(async (pr) => {
+        pr.capabilities = await this.capabilitiesFor(pr.name).catch(() => null);
+      })
+    );
+    return printers;
   }
 
   private async jobsFromLpstat(args: string[], state: JobInfo['state']): Promise<JobInfo[]> {

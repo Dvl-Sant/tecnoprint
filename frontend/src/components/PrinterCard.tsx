@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Layers, Wifi } from 'lucide-react';
-import { Card } from './ui';
+import { Card, Badge } from './ui';
 import { PrinterStatusBadge } from './Badges';
 import { printerIp } from '../api/client';
 import type { Printer } from '../api/client';
@@ -37,6 +37,16 @@ export default function PrinterCard({ printer, onAction }: {
           <Layers size={14} className="text-slate-400" /> {printer.queuedJobs} en cola
           {!printer.accepting && <span className="text-xs text-red-600">· no acepta trabajos</span>}
         </div>
+        {printer.capabilities && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <Badge className={printer.capabilities.color ? 'bg-fuchsia-50 text-fuchsia-700 ring-1 ring-fuchsia-200' : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'}>
+              {printer.capabilities.color ? 'Color' : 'B/N'}
+            </Badge>
+            <Badge className={printer.capabilities.duplex ? 'bg-sky-50 text-sky-700 ring-1 ring-sky-200' : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'}>
+              {printer.capabilities.duplex ? 'Doble cara' : 'Simple'}
+            </Badge>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between">
